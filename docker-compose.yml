@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: imantados-db
+    restart: always
+    environment:
+      POSTGRES_USER: nahuel
+      POSTGRES_PASSWORD: Warrior123
+      POSTGRES_DB: imantados
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgresdata:/var/lib/postgresql/data
+
+volumes:
+  postgresdata:

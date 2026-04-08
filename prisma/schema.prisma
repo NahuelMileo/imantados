@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Order {
+  id             String        @id @default(uuid())
+  orderNumber    Int           @default(autoincrement())
+  status         OrderStatus   @default(DRAFT)
+  customerEmail  String?
+  customerPhone  String?
+  customerName   String?
+  totalAmount    Int           @default(0)
+  currency       String        @default("UYU")
+  createdAt      DateTime      @default(now())
+  mpPaymentId    String?       @unique
+  mpPreferenceId String?
+  paidAt         DateTime?
+  items          OrderItem[]
+  uploads        OrderUpload[]
+}
+
+model OrderUpload {
+  id        String       @id @default(uuid())
+  orderId   String
+  quantity  Int          @default(1)
+  status    UploadStatus @default(TMP)
+  tmpKey    String
+  finalKey  String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  order     Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, tmpKey])
+  @@index([orderId])
+}
+
+model Pack {
+  id        String      @id
+  title     String
+  priceUYU  Int
+  maxImages Int         @default(1)
+  isActive  Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  items     OrderItem[]
+
+  @@map("Product")
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  productId String
+  quantity  Int
+  unitPrice Int
+  createdAt DateTime @default(now())
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  pack      Pack     @relation(fields: [productId], references: [id])
+
+  @@unique([orderId, productId])
+  @@index([orderId])
+}
+
+enum OrderStatus {
+  DRAFT
+  PENDING_PAYMENT
+  PAID
+  EXPIRED
+  CANCELLED
+}
+
+enum UploadStatus {
+  TMP
+  COMMITTING
+  COMMITTED
+  DELETED
+}
