@@ -37,7 +37,7 @@ export async function GET(req: Request) {
       });
       deleted++;
     } catch {
-      // reintenta
+      //reintenta
     }
   }
 
